@@ -1,0 +1,71 @@
+IN 10H
+L1:
+
+LDA 2000H ;inputting from dip switches
+MOV B,A
+
+;getting bits 0 and 1, ANDing them
+;and store result at pos 0 of C
+ANI 01H
+MOV D,A
+MOV A,B
+ANI 02H
+RRC
+ANA D
+MOV C,A
+
+;getting bits 2 and 3, ANDing them
+;and store result at pos 1 of C
+MOV A,B
+ANI 04H
+MOV D,A
+MOV A,B
+ANI 08H
+RRC
+ANA D
+RRC
+ORA C
+MOV C,A
+
+
+;getting bits 4 and 5, XORing them
+;and store result at pos 2 of C
+MOV A,B
+ANI 10H
+MOV D,A
+MOV A,B
+ANI 20H
+RRC
+XRA D
+RRC
+RRC
+ORA C
+MOV C,A
+
+
+;getting bits 6 and 7, XORing them
+;and store result at pos 3 of C
+MOV A,B
+ANI 40H
+MOV D,A
+MOV A,B
+ANI 80H
+RRC
+XRA D
+RRC
+RRC
+RRC
+ORA C
+MOV C,A
+
+;ORing bits 1 and 3 of C only with bits 2 and 4 of C
+RRC
+ANI 05H
+ORA C
+
+CMA ;complement because of the complement logic of leds
+STA 3000H ;showing to leds
+
+JMP L1
+
+END

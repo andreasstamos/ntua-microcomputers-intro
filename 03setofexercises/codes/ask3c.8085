@@ -1,0 +1,20 @@
+RHLR MACRO
+
+PUSH B ;using B to store A instead of push PSW in order to be able to update the CY flag
+MOV B,A
+
+MOV A,H
+RRC ;lsb of H to CY
+MOV A,L
+RAR ;rotate right using MSB as CY (CY is the lsb of H). old lsb to CY.
+MOV L,A
+MOV A,H
+RAR ;rotate right using MSB as CY (CY is the old lsb of L).
+MOV H,A
+
+RLC ;MSB of new H to CY
+
+MOV A,B
+POP B
+
+ENDM

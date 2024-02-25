@@ -1,0 +1,34 @@
+IN 10H ;disable memory protection
+MVI A,00H ;counter = 0
+LXI H,0900H ;initial address to save numbers
+
+BYTE:
+CPI 80H ;if counter == 80: end
+JZ ASK2
+MOV M,A ;move counter to memory
+INR A ;++counter
+INX H ;++memory address
+JMP BYTE ;repeat loop
+
+ASK2:
+LXI H,0900H ;initial address of numbers
+LXI B,0000H ;counter = 0
+BYTE2:
+MVI A,80H ;this is for the check below
+CMP L ;if memory address == 0980H then EXIT
+JZ EXIT
+INR L ;++memory address
+MOV A,M ;A=*(memory address)
+MVI D,09H ;bitcounter = 9
+
+BIT: ;while --bitcounter != 0 (will repeat 8 times)
+DCR D ;--bitcounter
+JZ BYTE2 ;if bitcounter == 0 then byte is complete
+RLC ;MSB to CY and left shift of A
+JNC BIT ;if msb == 0: go to next bit
+INX B ;if msb == 1: ++counter
+JMP BIT
+
+EXIT:
+RST 1 ;stop show that we can see the result at the register pair [BC]
+END

@@ -1,0 +1,78 @@
+IN 10H ;disabling memory protection
+
+;saving k1,k2 to memory
+MVI A,10H ;K1 = 10H
+STA 0906H
+MVI A,20H ;K2 = 20H
+STA 0907H
+
+MVI A,10H ;initializing display to nothing
+STA 0900H
+STA 0901H
+STA 0902H
+STA 0903H
+STA 0904H
+STA 0905H
+
+LXI D,0900H
+CALL STDM
+
+MVI A,0DH ;enabling interruputs
+SIM
+EI
+
+DO_NOTHING: ;while no interrupt just refresh the display
+CALL DCD
+JMP DO_NOTHING
+
+INTR_ROUTINE:
+
+EI ;reenabling interrputs
+
+;loading k1,k2 from memory to registers D,E
+LDA 0906H
+MOV D,A
+LDA 0907H
+MOV E,A
+
+POP H ;the return address wont be required and is without reason filling the stack
+CALL KIND ;inputting MSB hex digit from keyboard to A
+STA 0905H ;saving for display
+RLC ;taking the MSB hex digit to its correct position
+RLC
+RLC
+RLC
+MOV B,A
+CALL KIND ;inputting LSB hex digit from keyboard
+STA 0904H
+ORA B ;building the inputted number in binary.
+
+CMP E ;A > K2 ?
+JNC CASE3
+
+CMP D ; A > K1 ?
+JNC CASE2
+
+;case1 (A <= K1 for sure and A>=0 by construction)
+MVI A,7FH
+JMP CONTINUE
+
+CASE2:
+MVI A,BFH
+JMP CONTINUE
+
+CASE3:
+MVI A,DFH
+JMP CONTINUE
+
+CONTINUE:
+STA 3000H ;output to leds
+
+PUSH D
+LXI D,0900H
+CALL STDM ;moving display message to appropriate address
+POP D
+
+JMP DO_NOTHING ;start over
+
+END

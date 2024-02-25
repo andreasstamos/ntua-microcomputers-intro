@@ -1,0 +1,14 @@
+SWAP_Nible MACRO Q:
+
+PUSH PSW
+
+MOV A,Q
+RLC
+RLC
+RLC
+RLC
+MOV Q,A
+ 
+POP PSW
+
+ENDM

@@ -1,0 +1,14 @@
+IN 10H ;disable memory protection
+MVI A,00H ;counter = 0
+LXI H,0900H ;initial address to save numbers
+
+BYTE:
+CPI 80H ;if counter == 80: end
+JZ EXIT
+MOV M,A ;move counter to memory
+INR A ;++counter
+INX H ;++memory address
+JMP BYTE ;repeat loop
+
+EXIT:
+END

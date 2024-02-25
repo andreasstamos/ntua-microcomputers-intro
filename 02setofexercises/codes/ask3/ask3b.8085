@@ -1,0 +1,28 @@
+L1:
+CALL KIND ;inputing from the keyboard into A
+
+CPI 01H ;if A<1 show no leds
+JC SHOWNONE
+CPI 09H ;if A>=9 show no leds
+JNC SHOWNONE
+
+MOV B,A
+MVI A,00H
+
+NUMBER: ;looping over the value of B
+DCR B
+JZ SHOW
+RLC ;shifting left by adding 1 to the rightmost position
+INR A
+JMP NUMBER
+
+SHOW: ;showing the leds
+STA 3000H
+JMP L1
+
+SHOWNONE: ;showing no leds
+MVI A,FFH
+STA 3000H
+JMP L1
+
+END

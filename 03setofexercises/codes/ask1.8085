@@ -1,0 +1,71 @@
+IN 10H ;disable memory protection
+
+MVI A,10H
+STA 0900H ;zeroing the display message
+STA 0901H
+STA 0902H
+STA 0903H
+STA 0904H
+STA 0905H
+
+;enabling the RST6.5 interrupt
+MVI A,0DH
+SIM
+EI
+
+DO_NOTHING:
+JMP DO_NOTHING
+
+INTR_ROUTINE:
+POP H ;the return address wont be required and is without reason filling the stack
+EI ;reenabling the interrput
+MVI A,00H
+STA 3000H ;turn on the leds
+MVI H,06H ;H stores the tens of seconds
+MVI L,00H ;L stores one ten of seconds
+
+SECOND_LOOP:
+MOV A,L
+DCR A ;decreasing by 1 sec
+CPI FFH
+JZ DCR_TENS ;if went to -1 sec then the tens need to be decreased
+JMP L1
+
+DCR_TENS:
+MVI A,09H ;setting the units to 9
+MOV L,A
+STA 0900H
+MOV A,H
+DCR A
+CPI FFH ;if tens went to -1 then 60secs are over
+JZ EXIT_LOOP
+MOV H,A
+STA 0901H
+JMP L2
+
+L1:
+MOV L,A
+STA 0900H
+
+L2:
+PUSH H
+LXI D,0900H ;address of display message
+CALL STDM ;store display message to appropriate address
+POP H
+LXI B,0064H ;100ms
+
+MVI A,0AH ;refresh display 10 times (1000ms / 100ms per refresh)
+
+REFRESH_DISPLAY:
+;refresh display every 100ms
+CALL DELB
+CALL DCD ;display the display message
+DCR A
+JNZ REFRESH_DISPLAY
+JMP SECOND_LOOP
+
+EXIT_LOOP:
+MVI A,FFH
+STA 3000H ;turn off the leds;
+JMP DO_NOTHING ;go back to waiting
+END

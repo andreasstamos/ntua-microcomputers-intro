@@ -1,0 +1,41 @@
+IN 10H
+LXI B,03E8H ;delay of 1000ms stored in BC
+START:
+LDA 2000H ;load number from dip switches
+CPI 64H ;msb of A-100 to CY
+JNC L1 ;if A-100>=0 <==> a>=100 goto L1
+MVI D,FFH ;initialise d=-1
+CONVERT:
+INR D ;d += 1
+SUI 0AH ;A -= 10
+JNC CONVERT ;if before A-10>=0 <==> A>=10 we need to repeat more times
+ADI 0AH ;correct negative remainder
+MOV E,A ;mod10 (currently in A)to E
+MOV A,D ;get number/10 from D to A
+RLC ;move the 4 lsb of A to the 4 msb of A
+RLC
+RLC
+RLC
+ADD E ;the 4 lsb of A were 0 and the 4 msb of E were 0 too. so this way we concatenate the /10 and %10 to A
+CMA ;leds turn on for 0 and turn off for 1
+STA 3000H ;output A to leds
+JMP START ;restart
+L1: ;if A>=100
+CPI C8H ;msb of A-200 to CY
+JNC L2 ;if A-200>=0 <==> a>=200 goto L2
+MVI A,F0H ;turn on the 4 lsb leds
+STA 3000H ;output to leds
+CALL DELB ;delay of 1000ms
+MVI A,FFH ;turn off the leds
+STA 3000H ;output to leds
+CALL DELB ;delay of 1000ms
+JMP START ;restart
+L2: ;if A>=200
+MVI A,0FH ;turn on the 4 msb leds
+STA 3000H ;output to leds
+CALL DELB ;delay of 1000ms
+MVI A,FFH ;turn off the leds
+STA 3000H ;output to leds
+CALL DELB ;delay of 1000ms
+JMP START ;restart
+END

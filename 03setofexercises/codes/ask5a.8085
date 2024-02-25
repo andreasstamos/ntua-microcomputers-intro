@@ -1,0 +1,59 @@
+IN 10H ;disable memory protection
+
+LXI H,0000H ;HL stores the total sum
+
+MOV B,40H ;data counter
+
+MOV A,0BH ;enabling interrupt rst7.5
+SIM
+EI
+
+MAIN:
+MOV A,B 
+ANA A ;update the flags
+JZ COMPLETE ;waiting until all data has been inputed
+JMP MAIN
+
+COMPLETE:
+DI
+MOV A,L
+RLC ;checking if rounding up required
+JC ROUND_UP
+EXIT:
+HLT ;result in H
+ROUND_UP:
+INR H
+JMP EXIT
+
+RST6.5:
+PUSH PSW
+;check if receiving MSBs or LSBs. (if d is even receive lsbs)
+MOV A,B
+RRC
+JC MSBS
+
+;receive lsbs
+IN 20H
+ANI 0FH
+MOV A,E
+DCR B
+POP PSW
+EI
+RET
+
+MSBS:
+;receive msbs
+IN 20H
+ANI 0FH
+RLC
+RLC
+RLC
+RLC
+ORA E ;building the number
+MOV E,A
+MOV D,00H 
+DAD D ;adding DE (D=0, E=input byte) to results
+DCR B
+POP PSW
+EI
+RET

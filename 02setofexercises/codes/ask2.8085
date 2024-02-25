@@ -1,0 +1,41 @@
+IN 10H ;disable memory protection
+LXI B,0064H ;delay step of 100ms
+
+OFF0: ;state where nothing has happened
+MVI A,FFH
+STA 3000H ;turn off all leds
+LDA 2000H 
+RLC
+JC ON0 ;check if msb dip is on
+JMP OFF0
+
+ON0: ;state where msb dip is on
+LDA 2000H
+RLC
+JNC OFF1 ;check if msb dip is off
+JMP ON0
+
+OFF1: ;state where msb dip is OFFed after has been ONed
+MVI D,C8H
+MVI A,00H
+STA 3000H
+
+OFF1_0: ;while in state OFF1 looping for 200*100ms=20sec to check for extending time
+DCR D ;decrease the loop variable
+JZ OFF0 ;if out of time (D==0) return to initial off state
+CALL DELB ;delay 100ms
+LDA 2000H ;check if msb dip is on
+RLC
+JC OFF1_1
+JMP OFF1_0
+
+OFF1_1: ;state where msb dip is ONed while before in OFF state but LEDs were ON
+DCR D ;decrease the loop variable
+JZ OFF0 ;if out of time (D==0) return to initial off state
+CALL DELB ;delay 100ms
+LDA 2000H ;check if msb dip is off
+RLC
+JNC OFF1
+JMP OFF1_1 
+
+END

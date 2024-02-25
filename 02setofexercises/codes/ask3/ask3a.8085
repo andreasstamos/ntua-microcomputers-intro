@@ -1,0 +1,27 @@
+L1:
+MVI B,FEH
+LDA 2000H ;reading the dip switches
+
+BYTE: ;looping every bit inside bytes of dip switches
+RRC 
+JC SHOW ;if found the rightmost bit that is 1 goto show
+MOV C,A
+MOV A,B
+CPI 7FH ;if the ON led reached the leftmost posotion, then we've checked the whole byte and the loop is over
+JZ SHOWNONE
+RLC ;move the ON led one position left
+MOV B,A
+MOV A,C
+JMP BYTE
+
+SHOW: ;showing the leds
+MOV A,B
+STA 3000H
+JMP L1
+
+SHOWNONE: ;do not show any leds.
+MVI A,FFH
+STA 3000H
+JMP L1
+
+END

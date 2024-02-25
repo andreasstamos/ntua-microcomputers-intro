@@ -1,0 +1,26 @@
+IN 10H
+MVI A,FEH ;init led to on
+STA 3000H
+LXI B,01F4H ;delay of 500ms stored in BC
+MVI D,FEH ;init state of leds to D
+START:
+CALL DELB ;delay of 500ms
+LDA 2000H ;get state of dip switch
+RRC ;lsb of A to CY
+JNC START ;if lsb of A == 0 then do not rotate
+RLC ;restore state of A before RRC
+RLC ;msb of A to CY
+JC RIGHT ;if msb of A == 1 then rotate right
+LEFT:
+MOV A,D ;get saved state of leds
+RLC ;left rotate state
+STA 3000H ;output state to leds
+MOV D,A ;save state to D
+JMP START
+RIGHT: ;same as above
+MOV A,D ;get saved state of leds
+RRC ;left rotate state
+STA 3000H ;output state to leds
+MOV D,A ;save state to D
+JMP START
+END
